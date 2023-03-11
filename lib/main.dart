@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_supabase/home_page.dart';
+import 'package:flutter_supabase/start_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +20,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Supabase',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -31,8 +34,42 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const AuthPage(),
     );
+  }
+}
+
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+  @override
+  State<AuthPage> createState() => _AuthPageState();
+}
+
+class _AuthPageState extends State<AuthPage> {
+  User? _user;
+
+  @override
+  void initState() {
+    _getAuth();
+    super.initState();
+  }
+
+  Future<void> _getAuth() async {
+    setState(() {
+      _user = supabase.auth.currentUser;
+    });
+    supabase.auth.onAuthStateChange.listen((event) {
+      setState(() {
+        _user = event.session?.user;
+      });
+    });
+  }
+
+  final SupabaseClient supabase = Supabase.instance.client;
+
+  @override
+  Widget build(BuildContext context) {
+    return _user == null ? const StartPage() : HomePage();
   }
 }
 
